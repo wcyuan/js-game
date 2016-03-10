@@ -1,13 +1,17 @@
+// Based on http://www.w3schools.com/games/
+
 (function() {
     function component(gamearea, width, height, color, x, y, type) {
 	this.gamearea = gamearea;
 	this.type = type;
 	this.width = width;
 	this.height = height;
+	this.angle = 0;
 	this.x = x;
 	this.y = y;
 	this.speedX = 0;
 	this.speedY = 0;
+	this.speed = 0;
 	this.gravity = 0;
 	this.gravitySpeed = 0;
 	if (type == "image") {
@@ -16,8 +20,8 @@
 	}
 	this.newPos = function() {
 	    this.gravitySpeed += this.gravity;
-	    this.x += this.speedX;
-	    this.y += this.speedY + this.gravitySpeed;
+	    this.x += this.speedX + this.speed * Math.sin(this.angle);
+	    this.y += this.speedY + this.gravitySpeed - this.speed * Math.cos(this.angle);
 	    this.hitBottom();
 	};
 	this.hitBottom = function() {
@@ -30,25 +34,29 @@
 	this.update = function() {
 	    this.speedX = 0;
 	    this.speedY = 0;
-	    if (this.gamearea.keys && this.gamearea.keys[37]) { this.moveleft(); }
-	    if (this.gamearea.keys && this.gamearea.keys[39]) { this.moveright(); }
-	    if (this.gamearea.keys && this.gamearea.keys[38]) { this.moveup(); }
-	    if (this.gamearea.keys && this.gamearea.keys[40]) { this.movedown(); }
+	    this.speed = 0;
+	    if (this.gamearea.keys && this.gamearea.keys[37]) { this.rotateccw(); }
+	    if (this.gamearea.keys && this.gamearea.keys[39]) { this.rotatecw(); }
+	    if (this.gamearea.keys && this.gamearea.keys[38]) { this.moveforward(); }
+	    if (this.gamearea.keys && this.gamearea.keys[40]) { this.movebackward(); }
 	    this.newPos();
 	    var ctx = this.gamearea.context;
+	    ctx.save();
+        ctx.translate(this.x, this.y); 
+        ctx.rotate(this.angle);
 	    if (this.type == "image") {
-		ctx.drawImage(this.image,
-			      this.x,
-			      this.y,
-			      this.width, this.height);
+			ctx.drawImage(this.image,
+						  this.width / -2, this.height / -2,
+				          this.width, this.height);
 	    } else if (this.type == "text") {
-		ctx.font = this.width + " " + this.height;
-		ctx.fillStyle = color;
-		ctx.fillText(this.text, this.x, this.y);
+			ctx.font = this.width + " " + this.height;
+			ctx.fillStyle = color;
+			ctx.fillText(this.text, this.width / -2, this.height / -2);
 	    } else {
-		ctx.fillStyle = color;
-		ctx.fillRect(this.x, this.y, this.width, this.height);
+			ctx.fillStyle = color;
+			ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height); 
 	    }
+        ctx.restore(); 
 	};
 	this.crashWith = function(otherobj) {
 	    var myleft = this.x;
@@ -80,6 +88,18 @@
 	this.moveright = function() {
 	    this.speedX += 1;
 	};
+	this.moveforward = function() {
+	    this.speed += 1;
+	};
+	this.movebackward = function() {
+	    this.speed -= 1;
+	};
+	this.rotatecw = function() {
+		this.angle += Math.PI / 180;
+	}
+	this.rotateccw = function() {
+		this.angle -= Math.PI / 180;
+	}
 	this.stopmove = function() {
 	    this.speedX = 0;
 	    this.speedY = 0;
@@ -87,18 +107,18 @@
     }
 
     function sound(src) {
-	this.sound = document.createElement("audio");
-	this.sound.src = src;
-	this.sound.setAttribute("preload", "auto");
-	this.sound.setAttribute("controls", "none");
-	this.sound.style.display = "none";
-	document.body.appendChild(this.sound);
-	this.play = function(){
-	    this.sound.play();
-	};
-	this.stop = function(){
-	    this.sound.pause();
-	};
+		this.sound = document.createElement("audio");
+		this.sound.src = src;
+		this.sound.setAttribute("preload", "auto");
+		this.sound.setAttribute("controls", "none");
+		this.sound.style.display = "none";
+		document.body.appendChild(this.sound);
+		this.play = function(){
+		    this.sound.play();
+		};
+		this.stop = function(){
+		    this.sound.pause();
+		};
     }
 
     var myGameArea = {
@@ -110,7 +130,8 @@
 	    document.body.insertBefore(this.canvas, document.body.childNodes[0]);
 	    this.interval = setInterval(updateGame, 20);
 	    this.components = [];
-	    this.components.push(new component(this, 30, 30, "red", 10, 120));
+	    //this.components.push(new component(this, 30, 30, "red", 10, 120));
+	    this.components.push(new component(this, 30, 30, "https://raw.githubusercontent.com/wcyuan/snap/master/Costumes/dog2-b.png", 100, 120, "image"));
 	    //this.components[0].gravity = 0.06;
 	    window.addEventListener('keydown', function (e) {
 		    myGameArea.keys = (myGameArea.keys || []);
@@ -119,6 +140,10 @@
 	    window.addEventListener('keyup', function (e) {
 		    myGameArea.keys[e.keyCode] = false;
 		});
+		window.addEventListener('mousemove', function (e) {
+            myGameArea.mousex = e.pageX;
+            myGameArea.mousey = e.pageY;
+        });
 	},
 	clear : function() {
 	    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
