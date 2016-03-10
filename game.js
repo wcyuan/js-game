@@ -18,6 +18,9 @@
 	    this.image = new Image();
 	    this.image.src = color;
 	}
+	if (type == "text") {
+		this.text = "";
+	}
 	this.newPos = function() {
 	    this.gravitySpeed += this.gravity;
 	    this.x += this.speedX + this.speed * Math.sin(this.angle);
@@ -41,20 +44,22 @@
 	    if (this.gamearea.keys && this.gamearea.keys[40]) { this.movebackward(); }
 	    this.newPos();
 	    var ctx = this.gamearea.context;
-	    ctx.save();
-        ctx.translate(this.x, this.y); 
-        ctx.rotate(this.angle);
-	    if (this.type == "image") {
-			ctx.drawImage(this.image,
-						  this.width / -2, this.height / -2,
-				          this.width, this.height);
-	    } else if (this.type == "text") {
+	    if (this.type == "text") {
 			ctx.font = this.width + " " + this.height;
 			ctx.fillStyle = color;
-			ctx.fillText(this.text, this.width / -2, this.height / -2);
+			ctx.fillText(this.text, this.x, this.y);
 	    } else {
-			ctx.fillStyle = color;
-			ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height); 
+		    ctx.save();
+	        ctx.translate(this.x, this.y); 
+	        ctx.rotate(this.angle);
+		    if (this.type == "image") {
+				ctx.drawImage(this.image,
+							  this.width / -2, this.height / -2,
+					          this.width, this.height);
+		    } else {
+				ctx.fillStyle = color;
+				ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height); 
+		    }
 	    }
         ctx.restore(); 
 	};
@@ -130,8 +135,10 @@
 	    document.body.insertBefore(this.canvas, document.body.childNodes[0]);
 	    this.interval = setInterval(updateGame, 20);
 	    this.components = [];
-	    //this.components.push(new component(this, 30, 30, "red", 10, 120));
+	    this.components.push(new component(this, 30, 30, "red", 10, 120));
 	    this.components.push(new component(this, 30, 30, "https://raw.githubusercontent.com/wcyuan/snap/master/Costumes/dog2-b.png", 100, 120, "image"));
+		this.components.push(new component(this, "30px", "Consolas", "black", 140, 120, "text"));
+		this.components[2].text = "Hello";
 	    //this.components[0].gravity = 0.06;
 	    window.addEventListener('keydown', function (e) {
 		    myGameArea.keys = (myGameArea.keys || []);
