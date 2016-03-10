@@ -1,6 +1,11 @@
 // Based on http://www.w3schools.com/games/
-
+// things that Snap does that are hard with this setup
+// 1. broadcasts
+// 2. detecting clicks / dragging components
+// 3. detecting collisions for other shapes, or arbitrary shapes
 (function() {
+//}());
+
     function component(gamearea, width, height, color, x, y, type) {
 	this.gamearea = gamearea;
 	this.type = type;
@@ -173,4 +178,6 @@
     }
 
     myGameArea.start();
+
+//(function() {
 }());
